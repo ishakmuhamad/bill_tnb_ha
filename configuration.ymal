@@ -1,0 +1,169 @@
+  - platform: template
+    sensors:
+      power_watts:
+        friendly_name: "Power Watts"
+        unit_of_measurement: 'W'
+        value_template: >
+          {% set V = states('sensor.sonoff_1000ae5ced_voltage') | float %}
+          {% set A = states('sensor.measured_current') | float %}
+          {{ (0.95 * A * V) |round(1) }}
+ 
+  - platform: template
+    sensors:
+          power_kw:
+            friendly_name: "Power kW"
+            unit_of_measurement: "kWh"
+            value_template: >
+              {% set C = states('sensor.power_watts') | float %}
+              {{ (C / 1000) |round(2) }} 
+ 
+  - platform: integration
+    source: sensor.power_watts
+    name: Energy Spent
+    unit_prefix: k
+    method: trapezoidal
+    round: 2
+ 
+  - platform: statistics
+    name: kW_daily
+    entity_id: sensor.power_watts
+    sampling_size: 100
+    max_age: 
+      hours: 24
+ 
+  - platform: template
+    sensors:
+      tnb_kwh:
+        friendly_name: "Meter TNB"
+        unit_of_measurement: 'KW'
+        value_template: >
+          {% set W = states('sensor.energy_spent') | float %}
+          {% set Z = states('input_number.corrected_meter') | float %}
+          {{ (W - Z) |round(2) }}
+ 
+  - platform: template
+    sensors:
+      bill_tnb_rm:
+        friendly_name: "Jumlah Bill TNB"
+        unit_of_measurement: 'RM'
+        value_template: >
+          {% set Y = states('input_number.tnb24hb') | float %}
+          {{ (Y * 0.42) |round(2) }}
+ 
+ 
+ 
+  - platform: template
+    sensors:
+      2ndbill_tnb_rm:
+        friendly_name: "2nd Jumlah Bill TNB"
+        unit_of_measurement: 'RM'
+        icon_template: mdi:currency-usd
+        value_template: >
+          {% if states('sensor.tnb_bill24hb') | float < 201 %}
+            {% set Y = states('sensor.tnb_bill24hb') | float %}
+            {{ (Y * 0.218) |round(2) }}
+          {% elif states('sensor.tnb_bill24hb') | float >= 201 %}
+            43.60
+          {%- else %}
+            Unknown
+          {%- endif %}
+ 
+  - platform: template
+    sensors:
+      3rdbill_tnb_rm:
+        friendly_name: "3rd Jumlah Bill TNB"
+        unit_of_measurement: 'RM'
+        icon_template: mdi:currency-usd
+        value_template: >
+          {% if states('sensor.tnb_bill24hb') | float <= 200 %}
+            0
+          {% elif states('sensor.tnb_bill24hb') | float >= 301 %}
+            33.40
+          {% elif states('sensor.tnb_bill24hb') | float >= 201 < 300 %}
+            {% set E = states('sensor.tnb_bill24hb') | float - 200 %}
+            {{ (E * 0.334) |round(2) }}
+          {% elif states('sensor.tnb_bill24hb') | float >= 301 %}
+            33.40
+          {%- else %}
+            Unknown
+          {%- endif %}
+ 
+  - platform: template
+    sensors:
+      4thbill_tnb_rm:
+        friendly_name: "4th Jumlah Bill TNB"
+        unit_of_measurement: 'RM'
+        icon_template: mdi:currency-usd
+        value_template: >
+          {% if states('sensor.tnb_bill24hb') | float <= 300 %}
+            0
+          {% elif states('sensor.tnb_bill24hb') | float >= 601 %}
+            154.80
+          {% elif states('sensor.tnb_bill24hb') | float >= 301 < 600 %}
+            {% set F = states('sensor.tnb_bill24hb') | float - 300 %}
+            {{ (F * 0.516) |round(2) }}
+          {% elif states('sensor.tnb_bill24hb') | float >= 601 %}
+            154.80
+          {%- else %}
+            Unknown
+          {%- endif %}
+ 
+ 
+  - platform: template
+    sensors:
+      5thbill_tnb_rm:
+        friendly_name: "5th Jumlah Bill TNB"
+        unit_of_measurement: 'RM'
+        icon_template: mdi:currency-usd
+        value_template: >
+          {% if states('sensor.tnb_bill24hb') | float <= 600 %}
+            0
+          {% elif states('sensor.tnb_bill24hb') | float >= 901 %}
+            163.80
+          {% elif states('sensor.tnb_bill24hb') | float >= 601 < 900 %}
+            {% set G = states('sensor.tnb_bill24hb') | float - 600 %}
+            {{ (G * 0.546) |round(2) }}
+          {% elif states('sensor.tnb_bill24hb') | float >= 901 %}
+            163.80
+          {%- else %}
+            Unknown
+          {%- endif %}
+ 
+  - platform: template
+    sensors:
+      to_bill_tnb_rm:
+        friendly_name: "Total Bill TNB"
+        unit_of_measurement: 'RM'
+        icon_template: mdi:currency-usd
+        value_template: >
+          {% set H = states('sensor.2ndbill_tnb_rm') | float %}
+          {% set I = states('sensor.3rdbill_tnb_rm') | float %}
+          {% set J = states('sensor.4thbill_tnb_rm') | float %}
+          {% set K = states('sensor.5thbill_tnb_rm') | float %}
+          {{ (H + I + J + K) |round(2) }}
+ 
+  - platform: template
+    sensors:
+      tnb_bill24hb:
+        friendly_name: "Bill TNB 24hb"
+        unit_of_measurement: 'KW'
+        value_template: >
+          {% set L = states('sensor.tnb_kwh') | float %}
+          {% set M = states('input_number.tnb24hb') | float %}
+          {{ (L - M) |round(2) }}
+ 
+utility_meter:
+  hourly_energy_kwh:
+    source: sensor.energy_spent
+    cycle: hourly
+ 
+ 
+  daily_energy_kwh:
+    source: sensor.energy_spent
+    cycle: daily
+ 
+ 
+  monthly_energy_kwh:
+    source: sensor.energy_spent
+    cycle: monthly
+    
