@@ -1,0 +1,19 @@
+  # sample config.yaml utk NiezarmSan
+  
+  
+  - platform: integration
+    source: sensor.sonoff_1000fcfead_power
+    name: energy_spent
+    unit_prefix: k
+    method: trapezoidal
+    round: 2
+
+  - platform: template
+    sensors:
+      tnb_kwh:
+        friendly_name: "Meter TNB"
+        unit_of_measurement: 'KW'
+        value_template: >
+          {% set W = states('sensor.energy_spent') | float %}
+          {% set Z = states('input_number.corrected_meter') | float %}
+          {{ (W - Z) |round(2) }}
