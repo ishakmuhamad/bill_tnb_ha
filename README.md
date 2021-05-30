@@ -1,5 +1,6 @@
 # bill_tnb_ha
 bill tnb using home assistant
+kena tambah dari existing config file
 
 kena tambah helper.. number input utk correct meter reading
 
