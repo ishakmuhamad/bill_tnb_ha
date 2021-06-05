@@ -1,3 +1,51 @@
+Update 06 June 2021...
+
+Terima kasih kepada Niezarm yg telah berkongsi config beliau utk reset kwh apabila mendapat bill
+dari tnb di mana ianya berlainan utk tiap rumah. Rumah saya 24hb dan rumah Niezarm 13hb. Sebelum
+ini saya gunakan helper utk reset kwh counter bila 24hb. Cara Niezarm lagi mudah...
+
+https://github.com/Niezarm/TNB_billing_Calculation
+
+....................................................................
+
+platform: template
+
+sensors:
+
+finaltnb_bill24hb:
+
+friendly_name: "Final Bill TNB 24hb"
+
+unit_of_measurement: 'RM'
+
+icon_template: mdi:currency-usd
+
+value_template: >
+
+{% set O = states('sensor.2monthly_energy_kwh_normal') | float %}
+
+{{ (O * 0.218) |round(2) }}       
+    
+
+2monthly_energy_kwh:
+
+source: sensor.energy_spent
+
+cycle: monthly
+
+tariffs:
+
+normal
+      
+..............................................................................
+
+Kena letak tariff, baru call service keluar utk utility_meter.reset
+
+kemudian kena tambah automation
+
+Config saya akan diperkemaskan semula utk guna cara ini...
+
+
 # bill_tnb_ha
 bill tnb using home assistant
 kena tambah dari existing config file
